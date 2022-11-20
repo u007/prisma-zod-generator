@@ -1,53 +1,53 @@
+import { promises as fs } from 'fs'
 import {
   DMMF,
   EnvValue,
   GeneratorConfig,
   GeneratorOptions,
-} from '@prisma/generator-helper';
-import { getDMMF, parseEnvValue } from '@prisma/internals';
-import { promises as fs } from 'fs';
+} from '@prisma/generator-helper'
+import { getDMMF, parseEnvValue } from '@prisma/internals'
 import {
   addMissingInputObjectTypes,
   resolveAddMissingInputObjectTypeOptions,
-} from './helpers';
+} from './helpers'
 import {
   resolveAggregateOperationSupport,
-} from './helpers/aggregate-helpers';
-import Transformer from './transformer';
-import { AggregateOperationSupport } from './types';
-import removeDir from './utils/removeDir';
+} from './helpers/aggregate-helpers'
+import Transformer from './transformer'
+import { AggregateOperationSupport } from './types'
+import removeDir from './utils/removeDir'
 
-export async function generate(options: GeneratorOptions) {
-  await handleGeneratorOutputValue(options.generator.output as EnvValue);
+export async function generate (options: GeneratorOptions) {
+  await handleGeneratorOutputValue(options.generator.output as EnvValue)
 
   const prismaClientGeneratorConfig = getGeneratorConfigByProvider(
     options.otherGenerators,
     'prisma-client-js',
-  );
+  )
 
   const prismaClientDmmf = await getDMMF({
     datamodel: options.datamodel,
     previewFeatures: prismaClientGeneratorConfig?.previewFeatures,
-  });
+  })
 
-  checkForCustomPrismaClientOutputPath(prismaClientGeneratorConfig);
+  checkForCustomPrismaClientOutputPath(prismaClientGeneratorConfig)
 
   await generateEnumSchemas(
     prismaClientDmmf.schema.enumTypes.prisma,
     prismaClientDmmf.schema.enumTypes.model ?? [],
-  );
+  )
 
-  const models = prismaClientDmmf.datamodel.models;
-  const modelOperations = prismaClientDmmf.mappings.modelOperations;
-  const inputObjectTypes = prismaClientDmmf.schema.inputObjectTypes.prisma;
-  const outputObjectTypes = prismaClientDmmf.schema.outputObjectTypes.prisma;
+  const models = prismaClientDmmf.datamodel.models
+  const modelOperations = prismaClientDmmf.mappings.modelOperations
+  const inputObjectTypes = prismaClientDmmf.schema.inputObjectTypes.prisma
+  const outputObjectTypes = prismaClientDmmf.schema.outputObjectTypes.prisma
 
-  const dataSource = options.datasources?.[0];
-  Transformer.provider = dataSource.provider;
+  const dataSource = options.datasources?.[0]
+  Transformer.provider = dataSource.provider
 
-  const generatorConfigOptions = options.generator.config;
+  const generatorConfigOptions = options.generator.config
   const addMissingInputObjectTypeOptions =
-    resolveAddMissingInputObjectTypeOptions(generatorConfigOptions);
+    resolveAddMissingInputObjectTypeOptions(generatorConfigOptions)
   addMissingInputObjectTypes(
     inputObjectTypes,
     outputObjectTypes,
@@ -55,66 +55,66 @@ export async function generate(options: GeneratorOptions) {
     modelOperations,
     dataSource.provider,
     addMissingInputObjectTypeOptions,
-  );
-  await generateObjectSchemas(inputObjectTypes);
+  )
+  await generateObjectSchemas(inputObjectTypes)
 
   const aggregateOperationSupport =
-    resolveAggregateOperationSupport(inputObjectTypes);
+    resolveAggregateOperationSupport(inputObjectTypes)
 
-  await generateModelSchemas(models, modelOperations, aggregateOperationSupport);
+  await generateModelSchemas(models, modelOperations, aggregateOperationSupport)
 }
 
-async function handleGeneratorOutputValue(generatorOutputValue: EnvValue) {
-  const outputDirectoryPath = parseEnvValue(generatorOutputValue);
+async function handleGeneratorOutputValue (generatorOutputValue: EnvValue) {
+  const outputDirectoryPath = parseEnvValue(generatorOutputValue)
 
   // create the output directory and delete contents that might exist from a previous run
-  await fs.mkdir(outputDirectoryPath, { recursive: true });
-  const isRemoveContentsOnly = true;
-  await removeDir(outputDirectoryPath, isRemoveContentsOnly);
+  await fs.mkdir(outputDirectoryPath, { recursive: true })
+  const isRemoveContentsOnly = true
+  await removeDir(outputDirectoryPath, isRemoveContentsOnly)
 
-  Transformer.setOutputPath(outputDirectoryPath);
+  Transformer.setOutputPath(outputDirectoryPath)
 }
 
-function getGeneratorConfigByProvider(
+function getGeneratorConfigByProvider (
   generators: GeneratorConfig[],
   provider: string,
 ) {
-  return generators.find((it) => parseEnvValue(it.provider) === provider);
+  return generators.find(it => parseEnvValue(it.provider) === provider)
 }
 
-function checkForCustomPrismaClientOutputPath(
+function checkForCustomPrismaClientOutputPath (
   prismaClientGeneratorConfig: GeneratorConfig | undefined,
 ) {
   if (prismaClientGeneratorConfig?.isCustomOutput) {
     Transformer.setPrismaClientOutputPath(
       prismaClientGeneratorConfig.output?.value as string,
-    );
+    )
   }
 }
 
-async function generateEnumSchemas(
+async function generateEnumSchemas (
   prismaSchemaEnum: DMMF.SchemaEnum[],
   modelSchemaEnum: DMMF.SchemaEnum[],
 ) {
-  const enumTypes = [...prismaSchemaEnum, ...modelSchemaEnum];
-  const enumNames = enumTypes.map((enumItem) => enumItem.name);
-  Transformer.enumNames = enumNames ?? [];
+  const enumTypes = [...prismaSchemaEnum, ...modelSchemaEnum]
+  const enumNames = enumTypes.map(enumItem => enumItem.name)
+  Transformer.enumNames = enumNames ?? []
   const transformer = new Transformer({
     enumTypes,
-  });
-  await transformer.generateEnumSchemas();
+  })
+  await transformer.generateEnumSchemas()
 }
 
-async function generateObjectSchemas(inputObjectTypes: DMMF.InputType[]) {
+async function generateObjectSchemas (inputObjectTypes: DMMF.InputType[]) {
   for (let i = 0; i < inputObjectTypes.length; i += 1) {
-    const fields = inputObjectTypes[i]?.fields;
-    const name = inputObjectTypes[i]?.name;
-    const transformer = new Transformer({ name, fields });
-    await transformer.generateObjectSchema();
+    const fields = inputObjectTypes[i]?.fields
+    const name = inputObjectTypes[i]?.name
+    const transformer = new Transformer({ name, fields })
+    await transformer.generateObjectSchema()
   }
 }
 
-async function generateModelSchemas(
+async function generateModelSchemas (
   models: DMMF.Model[],
   modelOperations: DMMF.ModelMapping[],
   aggregateOperationSupport: AggregateOperationSupport,
@@ -123,6 +123,6 @@ async function generateModelSchemas(
     models,
     modelOperations,
     aggregateOperationSupport,
-  });
-  await transformer.generateModelSchemas();
+  })
+  await transformer.generateModelSchemas()
 }

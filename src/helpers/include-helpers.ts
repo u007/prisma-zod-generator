@@ -1,11 +1,11 @@
-import { DMMF } from '@prisma/generator-helper';
+import { DMMF } from '@prisma/generator-helper'
 import {
   checkIsModelRelationField,
   checkModelHasModelRelation,
   checkModelHasManyModelRelation,
-} from './model-helpers';
+} from './model-helpers'
 
-export function addMissingInputObjectTypesForInclude(
+export function addMissingInputObjectTypesForInclude (
   inputObjectTypes: DMMF.InputType[],
   models: DMMF.Model[],
   isGenerateSelect: boolean,
@@ -14,25 +14,25 @@ export function addMissingInputObjectTypesForInclude(
   const generatedIncludeInputObjectTypes = generateModelIncludeInputObjectTypes(
     models,
     isGenerateSelect,
-  );
+  )
 
   for (const includeInputObjectType of generatedIncludeInputObjectTypes) {
-    inputObjectTypes.push(includeInputObjectType);
+    inputObjectTypes.push(includeInputObjectType)
   }
 }
-function generateModelIncludeInputObjectTypes(
+function generateModelIncludeInputObjectTypes (
   models: DMMF.Model[],
   isGenerateSelect: boolean,
 ) {
-  const modelIncludeInputObjectTypes: DMMF.InputType[] = [];
+  const modelIncludeInputObjectTypes: DMMF.InputType[] = []
   for (const model of models) {
-    const { name: modelName, fields: modelFields } = model;
-    const fields: DMMF.SchemaArg[] = [];
+    const { name: modelName, fields: modelFields } = model
+    const fields: DMMF.SchemaArg[] = []
 
     for (const modelField of modelFields) {
-      const { name: modelFieldName, isList, type } = modelField;
+      const { name: modelFieldName, isList, type } = modelField
 
-      const isRelationField = checkIsModelRelationField(modelField);
+      const isRelationField = checkIsModelRelationField(modelField)
 
       if (isRelationField) {
         const field: DMMF.SchemaArg = {
@@ -48,8 +48,8 @@ function generateModelIncludeInputObjectTypes(
               namespace: 'prisma',
             },
           ],
-        };
-        fields.push(field);
+        }
+        fields.push(field)
       }
     }
 
@@ -57,33 +57,33 @@ function generateModelIncludeInputObjectTypes(
      * include is not generated for models that do not have a relation with any other models
      * -> continue onto the next model
      */
-    const hasRelationToAnotherModel = checkModelHasModelRelation(model);
+    const hasRelationToAnotherModel = checkModelHasModelRelation(model)
     if (!hasRelationToAnotherModel) {
-      continue;
+      continue
     }
 
-    const hasManyRelationToAnotherModel = checkModelHasManyModelRelation(model);
+    const hasManyRelationToAnotherModel = checkModelHasManyModelRelation(model)
 
-    const shouldAddCountField = hasManyRelationToAnotherModel;
+    const shouldAddCountField = hasManyRelationToAnotherModel
     if (shouldAddCountField) {
       const inputTypes: DMMF.SchemaArgInputType[] = [
         { isList: false, type: 'Boolean', location: 'scalar' },
-      ];
+      ]
       if (isGenerateSelect) {
         inputTypes.push({
           isList: false,
           type: `${modelName}CountOutputTypeArgs`,
           location: 'inputObjectTypes',
           namespace: 'prisma',
-        });
+        })
       }
       const _countField: DMMF.SchemaArg = {
         name: '_count',
         isRequired: false,
         isNullable: false,
         inputTypes,
-      };
-      fields.push(_countField);
+      }
+      fields.push(_countField)
     }
 
     const modelIncludeInputObjectType: DMMF.InputType = {
@@ -93,8 +93,8 @@ function generateModelIncludeInputObjectTypes(
         minNumFields: null,
       },
       fields,
-    };
-    modelIncludeInputObjectTypes.push(modelIncludeInputObjectType);
+    }
+    modelIncludeInputObjectTypes.push(modelIncludeInputObjectType)
   }
-  return modelIncludeInputObjectTypes;
+  return modelIncludeInputObjectTypes
 }
