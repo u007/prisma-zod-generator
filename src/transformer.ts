@@ -85,6 +85,7 @@ export default class Transformer {
     const zodObjectSchemaFields = this.generateObjectSchemaFields()
     const objectSchema = this.prepareObjectSchema(zodObjectSchemaFields)
     const objectSchemaName = this.resolveObjectSchemaName()
+    // console.log('zodObjectSchemaFields', Transformer.outputPath, objectSchemaName, zodObjectSchemaFields)
 
     await writeFileSafely(
       path.join(
@@ -285,12 +286,16 @@ export default class Transformer {
         exportName = name.replace('Args', '')
       }
     }
-
     if (isAggregateInputType(name)) {
       name = `${name}Type`
     }
+    const prismaName = this.name.endsWith('UpdateInput') || this.name.endsWith('CreateInput')
+      ? name.replace('UpdateInput', 'UncheckedUpdateInput').replace('CreateInput', 'UncheckedCreateInput')
+      : name
+
     const end = `export const ${exportName}ObjectSchema = Schema`
-    return `const Schema: z.ZodType<Prisma.${name}> = ${schema};\n\n ${end}`
+    console.log('generating export', name, prismaName, schema)
+    return `const Schema: z.ZodType<Prisma.${prismaName}> = ${schema};\n\n ${end}`
   }
 
   addFinalWrappers ({ zodStringFields }: { zodStringFields: string[] }) {
