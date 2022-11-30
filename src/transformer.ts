@@ -289,9 +289,10 @@ export default class Transformer {
     if (isAggregateInputType(name)) {
       name = `${name}Type`
     }
-    const prismaName = this.name.endsWith('UpdateInput') || this.name.endsWith('CreateInput')
-      ? name.replace('UpdateInput', 'UncheckedUpdateInput').replace('CreateInput', 'UncheckedCreateInput')
-      : name
+    const prismaName = name
+    // this.name.endsWith('UpdateInput') || this.name.endsWith('CreateInput')
+    //  ? name.replace('UpdateInput', 'UncheckedUpdateInput').replace('CreateInput', 'UncheckedCreateInput')
+    //  : name
 
     const end = `export const ${exportName}ObjectSchema = Schema`
     console.log('generating export', name, prismaName, schema)
@@ -535,7 +536,7 @@ export default class Transformer {
         const imports = [
           selectImport,
           includeImport,
-          `import { ${modelName}CreateInputObjectSchema } from './objects/${modelName}CreateInput.schema'`,
+          `import { ${modelName}UncheckedCreateInputObjectSchema } from './objects/${modelName}UncheckedCreateInput.schema'`,
         ]
         await writeFileSafely(
           path.join(Transformer.outputPath, `schemas/${createOne}.schema.ts`),
@@ -543,7 +544,7 @@ export default class Transformer {
             imports,
           )}${this.generateExportSchemaStatement(
             `${modelName}CreateOne`,
-            `z.object({ ${selectZodSchemaLine} ${includeZodSchemaLine} data: ${modelName}CreateInputObjectSchema  })`,
+            `z.object({ ${selectZodSchemaLine} ${includeZodSchemaLine} data: ${modelName}UncheckedCreateInputObjectSchema  })`,
           )}`,
         )
       }
@@ -599,7 +600,7 @@ export default class Transformer {
         const imports = [
           selectImport,
           includeImport,
-          `import { ${modelName}UpdateInputObjectSchema } from './objects/${modelName}UpdateInput.schema'`,
+          `import { ${modelName}UncheckedUpdateInputObjectSchema } from './objects/${modelName}UncheckedUpdateInput.schema'`,
           `import { ${modelName}WhereUniqueInputObjectSchema } from './objects/${modelName}WhereUniqueInput.schema'`,
         ]
         await writeFileSafely(
@@ -608,7 +609,7 @@ export default class Transformer {
             imports,
           )}${this.generateExportSchemaStatement(
             `${modelName}UpdateOne`,
-            `z.object({ ${selectZodSchemaLine} ${includeZodSchemaLine} data: ${modelName}UpdateInputObjectSchema, where: ${modelName}WhereUniqueInputObjectSchema  })`,
+            `z.object({ ${selectZodSchemaLine} ${includeZodSchemaLine} data: ${modelName}UncheckedUpdateInputObjectSchema, where: ${modelName}WhereUniqueInputObjectSchema  })`,
           )}`,
         )
       }
