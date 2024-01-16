@@ -295,7 +295,7 @@ export default class Transformer {
     //  : name
 
     const end = `export const ${exportName}ObjectSchema = Schema`
-    console.log('generating export', name, prismaName, schema)
+    // console.log('generating export', name, prismaName, schema)
     return `const Schema: z.ZodType<Prisma.${prismaName}> = ${schema};\n\n ${end}`
   }
 
