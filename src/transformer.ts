@@ -495,11 +495,11 @@ export default class Transformer {
         const imports = [
           selectImport,
           includeImport,
+          'import { Prisma } from \'@prisma/client\'',
           `import { ${modelName}WhereInputObjectSchema } from './objects/${modelName}WhereInput.schema'`,
           `import { ${modelName}OrderByWithRelationInputObjectSchema } from './objects/${modelName}OrderByWithRelationInput.schema'`,
           `import { ${modelName}WhereUniqueInputObjectSchema } from './objects/${modelName}WhereUniqueInput.schema'`,
           // `import { ${modelName}ScalarFieldEnumSchema } from './enums/${modelName}ScalarFieldEnum.schema'`,
-          'import { Prisma } from \'@prisma/client\'',
         ]
         await writeFileSafely(
           path.join(Transformer.outputPath, `schemas/${findFirst}.schema.ts`),
