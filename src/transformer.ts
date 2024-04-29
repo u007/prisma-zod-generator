@@ -156,7 +156,7 @@ export default class Transformer {
           ) {
             this.addSchemaImport(inputType.type)
           }
-
+          // console.log('generateObjectSchemaField', {field, inputType})
           result.push(
             this.generatePrismaStringLine(field, inputType, lines.length),
           )
