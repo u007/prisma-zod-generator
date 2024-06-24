@@ -16,8 +16,9 @@ Automatically generate [Zod](https://github.com/colinhacks/zod) schemas from you
 ## Table of Contents
 
 - [Supported Prisma Versions](#supported-prisma-versions)
-- [Installation](#installing)
+- [Installation](#installation)
 - [Usage](#usage)
+- [Customizations](#customizations)
 - [Additional Options](#additional-options)
 
 # Supported Prisma Versions
@@ -106,7 +107,20 @@ app.post('/blog', async (req, res, next) => {
 });
 ```
 
-## Additional Options
+# Customizations
+
+## Skipping entire models
+
+```prisma
+/// @@Gen.model(hide: true)
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+}
+```
+
+# Additional Options
 
 | Option              | Description                                                                | Type      | Default       |
 | ------------------- | -------------------------------------------------------------------------- | --------- | ------------- |
